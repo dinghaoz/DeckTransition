@@ -652,12 +652,17 @@ final class DeckPresentationController: UIPresentationController, UIGestureRecog
         return true
     }
     
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        if let slider = gestureRecognizer.view as? UISlider {
-            let trackRect = slider.trackRect(forBounds: slider.bounds)
-            let thumbRect = slider.thumbRect(forBounds: slider.bounds, trackRect: trackRect, value: slider.value)
-            
-            return !thumbRect.insetBy(dx: -20, dy: -20).contains(touch.location(in: slider))
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if let view = gestureRecognizer.view {
+            let hitView = view.hitTest(gestureRecognizer.location(in: view), with: nil)
+            if let slider = hitView as? UISlider {
+                let trackRect = slider.trackRect(forBounds: slider.bounds)
+                let thumbRect = slider.thumbRect(forBounds: slider.bounds, trackRect: trackRect, value: slider.value)
+                
+                return !thumbRect.insetBy(dx: -20, dy: -20).contains(gestureRecognizer.location(in: slider))
+            } else {
+                return true
+            }
         } else {
             return true
         }
