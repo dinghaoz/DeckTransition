@@ -567,8 +567,28 @@ final class DeckPresentationController: UIPresentationController, UIGestureRecog
         switch gestureRecognizer.state {
         
         case .began:
-            let detector = ScrollViewDetector(withViewController: presentedViewController)
-            if let scrollView = detector.scrollView {
+            func scrollView(for presentedVC: UIViewController, gestureRecognizer: UIPanGestureRecognizer) -> UIScrollView? {
+                guard let hitView = presentedViewController.view.hitTest(gestureRecognizer.location(in: presentedViewController.view), with: nil) else {
+                    return nil
+                }
+                
+                var itr: UIView? = hitView
+                while true {
+                    guard let itrView = itr else { return nil }
+                    if itrView == presentedViewController.view {
+                        break
+                    }
+                    
+                    if let scrollView = itrView as? UIScrollView {
+                        return scrollView
+                    } else {
+                        itr = itrView.superview
+                    }
+                }
+                return nil
+            }
+            
+            if let scrollView = scrollView(for: presentedViewController, gestureRecognizer: gestureRecognizer) {
                 scrollViewUpdater = ScrollViewUpdater(
                     withRootView: presentedViewController.view,
                     scrollView: scrollView)
@@ -651,6 +671,26 @@ final class DeckPresentationController: UIPresentationController, UIGestureRecog
         
         return true
     }
+    
+//    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+//        return true
+//    }
+    
+//    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+//        return true
+//    }
+    
+//    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+//        if let otherGestureRecognizer = otherGestureRecognizer as? UIPanGestureRecognizer, 
+//            let view = otherGestureRecognizer.view,
+//            let scrollView = view as? UIScrollView {
+//            
+//            if -scrollView.contentOffset.y - scrollView.contentInset.top >= 0 {
+//                return true
+//            }
+//        } 
+//        return false
+//    }
     
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if let view = gestureRecognizer.view {
